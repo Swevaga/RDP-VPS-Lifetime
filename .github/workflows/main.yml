@@ -15,19 +15,20 @@ jobs:
           Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' `
                            -Name "fDenyTSConnections" -Value 0 -Force
           Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' `
-                           -Name "UserAuthentication" -Value 1 -Force
-          
-          # Membuka Firewall untuk port 3389
+                           -Name "UserAuthentication" -Value 0 -Force
+          Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' `
+                           -Name "SecurityLayer" -Value 0 -Force
+
           netsh advfirewall firewall delete rule name="RDP-Tailscale"
           netsh advfirewall firewall add rule name="RDP-Tailscale" `
               dir=in action=allow protocol=TCP localport=3389
 
           Restart-Service -Name TermService -Force
 
-      - name: Create User Evaga PC Cloud
+      - name: Create User Evaga
         run: |
-          $username = "Evaga PC Cloud"
-          $password = "NurulCantikBanget"
+          $username = "Evaga"
+          $password = "NurulCantik177"
           $securePass = ConvertTo-SecureString $password -AsPlainText -Force
           
           # Membuat user baru
@@ -50,12 +51,12 @@ jobs:
 
       - name: Establish Tailscale Connection
         run: |
-          # Menghubungkan ke Tailscale dengan hostname: Evaga PC Cloud
+          # Hostname di Tailscale: Evaga-PC-Cloud
           & "$env:ProgramFiles\Tailscale\tailscale.exe" up --authkey=${{ secrets.TAILSCALE_AUTH_KEY }} --hostname="Evaga-PC-Cloud"
           
           $tsIP = $null
           $retries = 0
-          while (-not $tsIP -and $retries -lt 10) {
+          while (-not $tsIP -and $retries -lt 12) {
               $tsIP = & "$env:ProgramFiles\Tailscale\tailscale.exe" ip -4
               Start-Sleep -Seconds 5
               $retries++
@@ -71,13 +72,12 @@ jobs:
         run: |
           Write-Host "`n==============================="
           Write-Host "PC CLOUD READY!"
-          Write-Host "Hostname: Evaga-PC-Cloud"
           Write-Host "Address: $env:TAILSCALE_IP"
           Write-Host "Username: $env:RDP_USER"
           Write-Host "Password: $env:RDP_PASS"
           Write-Host "===============================`n"
           
           while ($true) {
-              Write-Host "[$(Get-Date)] Runner Tetap Aktif..."
+              Write-Host "[$(Get-Date)] RDP Aktif - Gunakan IP di atas untuk login"
               Start-Sleep -Seconds 300
           }
